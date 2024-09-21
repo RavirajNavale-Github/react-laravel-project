@@ -1,25 +1,36 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "react-bootstrap";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("Please Login First!");
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("token");
         const response = await axios.get("http://localhost:8000/api/user", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         setUser(response.data);
+        setFormData({ ...response.data }); // Initialize formData with user data
       } catch (error) {
         console.error("Failed to fetch user", error);
-        navigate("/login"); // Redirect to login if there's an error
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -40,11 +51,57 @@ const Profile = () => {
           },
         }
       );
-      localStorage.removeItem("token"); // Remove token from local storage
-      navigate("/login"); // Redirect to login page
+      localStorage.removeItem("token");
+      navigate("/login");
     } catch (error) {
       console.error("Logout failed", error);
     }
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        "http://localhost:8000/api/user",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setUser(response.data);
+      setShowModal(false);
+      alert("User updated successfully!");
+    } catch (error) {
+      console.error("Update failed", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete("http://localhost:8000/api/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      localStorage.removeItem("token");
+      alert("Account deleted successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    setFormData({ ...formData, profile: e.target.files[0] });
   };
 
   if (loading) {
@@ -72,6 +129,16 @@ const Profile = () => {
         }}
       >
         User Profile
+        <span
+          style={{
+            float: "right",
+            cursor: "pointer",
+            fontSize: "1.5rem",
+          }}
+          onClick={() => setShowModal(true)}
+        >
+          &#x022EE;
+        </span>
       </h2>
       <img
         src={
@@ -110,6 +177,84 @@ const Profile = () => {
       >
         Logout
       </button>
+
+      {/* Modal for updating user data */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Profile</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form>
+            <div className="mb-3">
+              <label className="form-label">Name</label>
+              <input
+                type="text"
+                name="name"
+                className="form-control"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Email</label>
+              <input
+                type="email"
+                name="email"
+                className="form-control"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Mobile</label>
+              <input
+                type="text"
+                name="mobile"
+                className="form-control"
+                value={formData.mobile}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Company Position</label>
+              <input
+                type="text"
+                name="company_position"
+                className="form-control"
+                value={formData.company_position}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Profile Image</label>
+              <input
+                type="file"
+                name="profile"
+                className="form-control"
+                onChange={handleFileChange}
+              />
+            </div>
+          </form>
+        </Modal.Body>
+        <Modal.Footer>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowModal(false)}
+          >
+            Close
+          </button>
+          <button className="btn btn-primary" onClick={handleUpdate}>
+            Save Changes
+          </button>
+          <button className="btn btn-danger" onClick={handleDelete}>
+            Delete Account
+          </button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

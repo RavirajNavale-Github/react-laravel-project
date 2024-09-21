@@ -26,9 +26,7 @@ const Login = () => {
       );
       console.log("Responce Data", response.data);
 
-      // Save token and token type in local storage
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("token_type", response.data.token_type);
 
       alert("Login Successful!");
       navigate("/profile");

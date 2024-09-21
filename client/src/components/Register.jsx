@@ -8,7 +8,7 @@ const Register = () => {
     profile: null,
     name: "",
     email: "",
-    mobile: "+91 ", // Default mobile value with prefix
+    mobile: "+91 ",
     company_position: "",
     password: "",
     password_confirmation: "",
