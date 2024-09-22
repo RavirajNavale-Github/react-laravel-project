@@ -85,7 +85,7 @@ const Profile = () => {
 
   const handleUpdate = async () => {
     const token = localStorage.getItem("token");
-    const id = user.id; // Use the user ID directly from the fetched user data
+    const id = user.id;
 
     const formData = new FormData();
     if (userData.profile) {
@@ -101,7 +101,7 @@ const Profile = () => {
         method: "POST",
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${token}`, // Include the token in the headers
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -113,7 +113,8 @@ const Profile = () => {
       const data = await response.json();
       alert("User updated successfully");
       setUserData(data.user); // Update userData with the new user data
-      setShowModal(false); // Close the modal
+      setShowModal(false);
+      window.location.reload();
     } catch (error) {
       alert("Error updating user: " + error.message);
     }

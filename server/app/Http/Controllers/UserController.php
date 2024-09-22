@@ -67,9 +67,8 @@ class UserController extends Controller
     // Logout User
     public function logout(Request $request)
     {
-        $user = Auth::user(); // Get the authenticated user
+        $user = Auth::user();
 
-        // Revoke the token
         $user->tokens()->delete();
 
         return response()->json(['message' => 'User logged out successfully!'], 200);
@@ -78,7 +77,7 @@ class UserController extends Controller
     // Get User
     public function getUser(Request $request)
     {
-        $user = Auth::user(); // Get the authenticated user
+        $user = Auth::user(); 
 
         // Return user information without password
         return response()->json([
@@ -100,7 +99,6 @@ public function updateUser(Request $request, $id)
         return response()->json(['message' => 'User not found'], 404);
     }
 
-    // Validate the incoming data
     $validatedData = $request->validate([
         'profile' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
         'name' => 'required|string|max:255',
@@ -120,7 +118,6 @@ public function updateUser(Request $request, $id)
     $user->mobile = $validatedData['mobile'];
     $user->company_position = $validatedData['company_position'];
 
-    // Save the updated user record
     $user->save();
 
     return response()->json(['message' => 'User updated successfully', 'user' => $user]);
@@ -132,9 +129,9 @@ public function updateUser(Request $request, $id)
     // Delete User
     public function deleteUser(Request $request)
     {
-        $user = Auth::user(); // Get the authenticated user
+        $user = Auth::user();
 
-        $user->delete(); // Delete the user from the database
+        $user->delete();
 
         return response()->json(['message' => 'User deleted successfully!'], 200);
     }
