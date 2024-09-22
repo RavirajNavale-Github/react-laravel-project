@@ -7,7 +7,7 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [userData, setUserData] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const Profile = () => {
           },
         });
         setUser(response.data);
-        setFormData({ ...response.data }); // Initialize formData with user data
+        setUserData({ ...response.data }); // Initialize userData with user data
       } catch (error) {
         console.error("Failed to fetch user", error);
         navigate("/login");
@@ -58,27 +58,6 @@ const Profile = () => {
     }
   };
 
-  const handleUpdate = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        "http://localhost:8000/api/user",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setUser(response.data);
-      setShowModal(false);
-      alert("User updated successfully!");
-    } catch (error) {
-      console.error("Update failed", error);
-    }
-  };
-
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -97,11 +76,47 @@ const Profile = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setUserData({ ...userData, [name]: value });
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, profile: e.target.files[0] });
+    setUserData({ ...userData, profile: e.target.files[0] });
+  };
+
+  const handleUpdate = async () => {
+    const token = localStorage.getItem("token");
+    const id = user.id; // Use the user ID directly from the fetched user data
+
+    const formData = new FormData();
+    if (userData.profile) {
+      formData.append("profile", userData.profile);
+    }
+    formData.append("name", userData.name);
+    formData.append("email", userData.email);
+    formData.append("mobile", userData.mobile);
+    formData.append("company_position", userData.company_position);
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/user/${id}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Error updating user: " + response.statusText);
+      }
+
+      const data = await response.json();
+      alert("User updated successfully");
+      setUserData(data.user); // Update userData with the new user data
+      setShowModal(false); // Close the modal
+    } catch (error) {
+      alert("Error updating user: " + error.message);
+    }
   };
 
   if (loading) {
@@ -191,7 +206,7 @@ const Profile = () => {
                 type="text"
                 name="name"
                 className="form-control"
-                value={formData.name}
+                value={userData.name}
                 onChange={handleChange}
                 required
               />
@@ -202,7 +217,7 @@ const Profile = () => {
                 type="email"
                 name="email"
                 className="form-control"
-                value={formData.email}
+                value={userData.email}
                 onChange={handleChange}
                 required
               />
@@ -213,7 +228,7 @@ const Profile = () => {
                 type="text"
                 name="mobile"
                 className="form-control"
-                value={formData.mobile}
+                value={userData.mobile}
                 onChange={handleChange}
                 required
               />
@@ -224,7 +239,7 @@ const Profile = () => {
                 type="text"
                 name="company_position"
                 className="form-control"
-                value={formData.company_position}
+                value={userData.company_position}
                 onChange={handleChange}
                 required
               />

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -90,45 +91,43 @@ class UserController extends Controller
         ]);
     }
 
-    // Update User
-    public function updateUser(Request $request)
-    {
-        $user = Auth::user(); // Get the authenticated user
+// Update User
+public function updateUser(Request $request, $id)
+{
+    $user = User::find($id);
 
-        $request->validate([
-            'profile' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'name' => 'string|max:120',
-            'email' => 'string|email|max:120|unique:users,email,' . $user->id,
-            'mobile' => 'string|regex:/^\+91\d{10}$/|unique:users,mobile,' . $user->id,
-            'company_position' => 'string|max:120',
-        ]);
-
-        // Update fields
-        if ($request->hasFile('profile')) {
-            $profilePath = $request->file('profile')->store('profiles', 'public');
-            $user->profile = $profilePath;
-        }
-
-        if ($request->has('name')) {
-            $user->name = $request->name;
-        }
-
-        if ($request->has('email')) {
-            $user->email = $request->email;
-        }
-
-        if ($request->has('mobile')) {
-            $user->mobile = $request->mobile;
-        }
-
-        if ($request->has('company_position')) {
-            $user->company_position = $request->company_position;
-        }
-
-        $user->save(); // Save the updated user information
-
-        return response()->json(['message' => 'User updated successfully!', 'user' => $user], 200);
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
     }
+
+    // Validate the incoming data
+    $validatedData = $request->validate([
+        'profile' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'mobile' => 'required|string|max:15',
+        'company_position' => 'required|string|max:255',
+    ]);
+
+    if ($request->hasFile('profile')) {
+        $imagePath = $request->file('profile')->store('profiles', 'public');
+        $user->profile = $imagePath;
+    }
+
+    // Update fields
+    $user->name = $validatedData['name'];
+    $user->email = $validatedData['email'];
+    $user->mobile = $validatedData['mobile'];
+    $user->company_position = $validatedData['company_position'];
+
+    // Save the updated user record
+    $user->save();
+
+    return response()->json(['message' => 'User updated successfully', 'user' => $user]);
+}
+
+
+
 
     // Delete User
     public function deleteUser(Request $request)
