@@ -50,9 +50,10 @@ const Register = () => {
         }
       );
       console.log(response.data);
-      alert("Registration Successful!");
+      alert(response.data.message);
       navigate("/login");
     } catch (error) {
+      console.log(error.response);
       if (error.response && error.response.data.errors) {
         setErrors(error.response.data.errors);
       } else {
