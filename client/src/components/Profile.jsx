@@ -91,6 +91,7 @@ const Profile = () => {
     if (userData.profile) {
       formData.append("profile", userData.profile);
     }
+
     formData.append("name", userData.name);
     formData.append("email", userData.email);
     formData.append("mobile", userData.mobile);
@@ -153,7 +154,8 @@ const Profile = () => {
           }}
           onClick={() => setShowModal(true)}
         >
-          &#x022EE;
+          {/* &#x022EE; */}
+          &#x2630;
         </span>
       </h2>
       <img
@@ -167,6 +169,7 @@ const Profile = () => {
           width: "150px",
           height: "150px",
           borderRadius: "75px",
+          border: "5px solid #4916eb",
           display: "block",
           margin: "0 auto",
         }}

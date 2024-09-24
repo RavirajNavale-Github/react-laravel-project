@@ -81,7 +81,7 @@ const Register = () => {
       >
         Register
       </h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="p-0">
         <div className="mb-3 text-start">
           <label className="form-label" style={{ color: "#4916eb" }}>
             Profile Picture
