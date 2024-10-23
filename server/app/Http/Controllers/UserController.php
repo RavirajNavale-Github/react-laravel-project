@@ -65,9 +65,10 @@ class UserController extends Controller
     }
 
     // Logout User
-    public function logout(Request $request)
+    public function logout(Request $request, $id)
     {
-        $user = Auth::user();
+        // $user = Auth::user();
+        $user = User::find($id);
 
         $user->tokens()->delete();
 
@@ -77,7 +78,7 @@ class UserController extends Controller
     // Get User
     public function getUser(Request $request)
     {
-        $user = Auth::user(); 
+        $user = Auth::user();
 
         // Return user information without password
         return response()->json([
@@ -90,46 +91,47 @@ class UserController extends Controller
         ]);
     }
 
-// Update User
-public function updateUser(Request $request, $id)
-{
-    $user = User::find($id);
+    // Update User
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::find($id);
 
-    if (!$user) {
-        return response()->json(['message' => 'User not found'], 404);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $validatedData = $request->validate([
+            'profile' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'mobile' => 'required|string|max:15',
+            'company_position' => 'required|string|max:255',
+        ]);
+
+        if ($request->hasFile('profile')) {
+            $imagePath = $request->file('profile')->store('profiles', 'public');
+            $user->profile = $imagePath;
+        }
+
+        // Update fields
+        $user->name = $validatedData['name'];
+        $user->email = $validatedData['email'];
+        $user->mobile = $validatedData['mobile'];
+        $user->company_position = $validatedData['company_position'];
+
+        $user->save();
+
+        return response()->json(['message' => 'User updated successfully', 'user' => $user]);
     }
-
-    $validatedData = $request->validate([
-        'profile' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,' . $user->id,
-        'mobile' => 'required|string|max:15',
-        'company_position' => 'required|string|max:255',
-    ]);
-
-    if ($request->hasFile('profile')) {
-        $imagePath = $request->file('profile')->store('profiles', 'public');
-        $user->profile = $imagePath;
-    }
-
-    // Update fields
-    $user->name = $validatedData['name'];
-    $user->email = $validatedData['email'];
-    $user->mobile = $validatedData['mobile'];
-    $user->company_position = $validatedData['company_position'];
-
-    $user->save();
-
-    return response()->json(['message' => 'User updated successfully', 'user' => $user]);
-}
 
 
 
 
     // Delete User
-    public function deleteUser(Request $request)
+    public function deleteUser(Request $request, $id)
     {
-        $user = Auth::user();
+        // $user = Auth::user();
+        $user = User::find($id);
 
         $user->delete();
 
