@@ -10,13 +10,17 @@
         body {
             background-color: #f8f9fa;
             height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .container {
             background: #e8e7ff;
             border-radius: 10px;
-            width: 50%;
-            margin-top: 50px;
+            width: 100%;
+            max-width: 400px; /* Limit maximum width */
             padding: 40px;
+            margin: 0 20px; /* Add horizontal margins */
         }
         h2 {
             color: #1b076e;
